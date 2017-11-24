@@ -30,7 +30,7 @@ namespace UDPer
             catch { /* don't care */ }
         }
 
-        private readonly UdpClient udp = new UdpClient(PORT_NUMBER);
+        private readonly UdpClient udp = new UdpClient();
         IAsyncResult ar_ = null;
 
         private void StartListening()
@@ -54,15 +54,21 @@ namespace UDPer
             client.Close();
             Console.WriteLine("Sent: {0} ", message);
         }
+
+        public Socket Socket => udp.Client;
+        public int Port => PORT_NUMBER;
     }
 
     
     
-    class Program
+    partial class Program
     {
         static void Main(string[] args)
         {
             UDPer udp = new UDPer();
+            udp.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, udp.Port);
+            udp.Socket.Bind(localEndPoint);
             udp.Start();
 
             ConsoleKeyInfo cki;
